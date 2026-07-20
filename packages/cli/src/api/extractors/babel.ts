@@ -140,7 +140,7 @@ export async function extractFromFileWithBabel(
             [
               linguiMacroPlugin,
               {
-                extract: true,
+                descriptorFields: "all",
                 linguiConfig: ctx.linguiConfig,
               } satisfies LinguiPluginOpts,
             ],
@@ -149,13 +149,14 @@ export async function extractFromFileWithBabel(
       [
         linguiExtractMessages,
         {
+          linguiConfig: ctx.linguiConfig,
           onMessageExtracted: (msg) => {
             return onMessageExtracted({
               ...msg,
               origin: mapper.originalPositionFor(msg.origin!),
             })
           },
-        } satisfies ExtractPluginOpts,
+        } satisfies ExtractPluginOpts & Pick<LinguiPluginOpts, "linguiConfig">,
       ],
     ],
   })

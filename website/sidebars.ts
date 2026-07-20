@@ -13,6 +13,11 @@ const sidebar = [
         label: "Installation and Setup",
         id: "installation",
       },
+      {
+        type: "doc",
+        label: "i18n with AI",
+        id: "ai-tools",
+      },
     ],
   },
   {
@@ -33,6 +38,11 @@ const sidebar = [
         type: "doc",
         label: "React Native",
         id: "tutorials/react-native",
+      },
+      {
+        type: "doc",
+        label: "Solid",
+        id: "tutorials/solid",
       },
       {
         type: "doc",
@@ -123,6 +133,11 @@ const sidebar = [
       },
       {
         type: "doc",
+        label: "@lingui/solid",
+        id: "ref/solid",
+      },
+      {
+        type: "doc",
         label: "@lingui/cli",
         id: "ref/cli",
       },
@@ -155,6 +170,11 @@ const sidebar = [
         type: "category",
         label: "Advanced",
         items: [
+          {
+            type: "doc",
+            label: "Typed Message IDs",
+            id: "guides/typed-message-ids",
+          },
           {
             type: "doc",
             label: "Custom Extractor",

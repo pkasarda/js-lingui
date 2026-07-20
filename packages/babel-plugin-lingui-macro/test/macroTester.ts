@@ -5,6 +5,8 @@ import path from "path"
 import fs from "fs"
 import { macro } from "../src/macro"
 import Module from "node:module"
+import { stripVTControlCharacters } from "node:util"
+import { makeConfig } from "@lingui/conf"
 
 export type TestCase = TestCaseInline | TestCaseFixture
 
@@ -31,6 +33,7 @@ type TestCaseCommon = {
   macroOpts?: LinguiPluginOpts
   only?: boolean
   skip?: boolean
+  shouldThrow?: boolean
   /**
    * Will not execute test using babel-macro-plugin
    */
@@ -42,7 +45,10 @@ export type MacroTesterOptions = {
 }
 
 export function macroTester(opts: MacroTesterOptions) {
-  process.env.LINGUI_CONFIG = path.join(__dirname, "lingui.config.js")
+  const defaultLinguiConfig = makeConfig({
+    rootDir: __dirname,
+    locales: ["en"],
+  })
 
   const clean = (value: string) =>
     format(value, { parser: "typescript" }).then((c) => c.replace(/\n+/, "\n"))
@@ -65,6 +71,10 @@ export function macroTester(opts: MacroTesterOptions) {
 
     group(groupName, async () => {
       const originalEnv = process.env.NODE_ENV
+      const resolvedMacroOpts = {
+        linguiConfig: defaultLinguiConfig,
+        ...macroOpts,
+      }
 
       if (production) {
         process.env.NODE_ENV = "production"
@@ -85,7 +95,7 @@ export function macroTester(opts: MacroTesterOptions) {
           const actualPlugin = transformFileSync(inputPath, {
             ...getDefaultBabelOptions(
               "plugin",
-              macroOpts,
+              resolvedMacroOpts,
               useTypescriptPreset,
               useReactCompiler,
             ),
@@ -97,7 +107,7 @@ export function macroTester(opts: MacroTesterOptions) {
           const actualMacro = transformFileSync(inputPath, {
             ...getDefaultBabelOptions(
               "macro",
-              macroOpts,
+              resolvedMacroOpts,
               useTypescriptPreset,
               useReactCompiler,
             ),
@@ -111,11 +121,38 @@ export function macroTester(opts: MacroTesterOptions) {
 
           expect(await clean(actualPlugin)).toEqual(await clean(expected))
         } else {
+          if (testCase.shouldThrow) {
+            expect(() => {
+              try {
+                transformSync(
+                  testCase.code,
+                  getDefaultBabelOptions(
+                    "plugin",
+                    resolvedMacroOpts,
+                    useTypescriptPreset,
+                    useReactCompiler,
+                  ),
+                )
+              } catch (e: any) {
+                if (e && e.message) {
+                  e.message = stripVTControlCharacters(
+                    e.message
+                      .replace(process.cwd(), "<cwd>")
+                      // normalize path on Windows
+                      .replace("<cwd>\\", "<cwd>/"),
+                  )
+                }
+                throw e
+              }
+            }).toThrowErrorMatchingSnapshot()
+            return
+          }
+
           const actualPlugin = transformSync(
             testCase.code,
             getDefaultBabelOptions(
               "plugin",
-              macroOpts,
+              resolvedMacroOpts,
               useTypescriptPreset,
               useReactCompiler,
             ),
@@ -126,7 +163,7 @@ export function macroTester(opts: MacroTesterOptions) {
               testCase.code,
               getDefaultBabelOptions(
                 "macro",
-                macroOpts,
+                resolvedMacroOpts,
                 useTypescriptPreset,
                 useReactCompiler,
               ),
@@ -149,7 +186,6 @@ export function macroTester(opts: MacroTesterOptions) {
           }
         }
       } finally {
-        process.env.LINGUI_CONFIG = ""
         process.env.NODE_ENV = originalEnv
       }
     })

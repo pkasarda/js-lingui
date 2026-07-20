@@ -3,6 +3,78 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.5.0](https://github.com/lingui/js-lingui/compare/v6.4.0...v6.5.0) (2026-07-06)
+
+### Features
+
+* add pseudolocalize options ([#2583](https://github.com/lingui/js-lingui/issues/2583)) ([3547688](https://github.com/lingui/js-lingui/commit/35476887e8601b9a3dd0361c8c1a04ed2e8669a3))
+* **experimental-extractor:** pluggable bundler interface + rolldown support ([#2572](https://github.com/lingui/js-lingui/issues/2572)) ([06940ed](https://github.com/lingui/js-lingui/commit/06940ed09f5c2a70c96a5981121c77a4cd305b6c))
+
+# [6.4.0](https://github.com/lingui/js-lingui/compare/v6.3.0...v6.4.0) (2026-06-16)
+
+### Features
+
+* **macro:** set `/** i18n */` extraction mark instead of `/* i18n */` ([#2571](https://github.com/lingui/js-lingui/issues/2571)) ([57e3d4a](https://github.com/lingui/js-lingui/commit/57e3d4aef795bf5ab18eacb40da6eee56032a828))
+* solidjs integration ([#2510](https://github.com/lingui/js-lingui/issues/2510)) ([7aacbeb](https://github.com/lingui/js-lingui/commit/7aacbeba4ac0670dac4c2b90f41bd336e4fc2ac8))
+
+# [6.3.0](https://github.com/lingui/js-lingui/compare/v6.2.0...v6.3.0) (2026-06-10)
+
+### Features
+
+* **cli:** add support for `BatchExtractor` ([#2562](https://github.com/lingui/js-lingui/issues/2562)) ([3d0bf56](https://github.com/lingui/js-lingui/commit/3d0bf56dd8da217485ed40e7f4d7c127213d66cb))
+
+# [6.2.0](https://github.com/lingui/js-lingui/compare/v6.1.0...v6.2.0) (2026-06-01)
+
+### Features
+
+* integrate `pofile-ts` ([#2548](https://github.com/lingui/js-lingui/issues/2548)) ([ea5b2d3](https://github.com/lingui/js-lingui/commit/ea5b2d33426560990d3ce49a97a58bdedf775cb9))
+
+### Performance Improvements
+
+* **cli:** speed up catalog merge key partitioning ([#2540](https://github.com/lingui/js-lingui/issues/2540)) ([c3f0aff](https://github.com/lingui/js-lingui/commit/c3f0aff0eba850c07fcd107879f30e9c00a4a8b5))
+
+# [6.1.0](https://github.com/lingui/js-lingui/compare/v6.0.1...v6.1.0) (2026-05-21)
+
+### Bug Fixes
+
+* disappearing placeholder comments in partial extract ([#2543](https://github.com/lingui/js-lingui/issues/2543)) ([725a2bf](https://github.com/lingui/js-lingui/commit/725a2bf4d0b0cbf5d405d6e9ed79efa391bdd572))
+
+## [6.0.1](https://github.com/lingui/js-lingui/compare/v6.0.0...v6.0.1) (2026-04-30)
+
+### Bug Fixes
+
+* **cli:** declare files arguments ([#2532](https://github.com/lingui/js-lingui/issues/2532)) ([4a55abe](https://github.com/lingui/js-lingui/commit/4a55abe7b3d046b972cb26a3c5a11acf397f1d7a))
+
+# [6.0.0](https://github.com/lingui/js-lingui/compare/v5.9.5...v6.0.0) (2026-04-22)
+
+- [Announcing Lingui 6.0](https://lingui.dev/blog/2026/04/22/announcing-lingui-6.0)
+
+## [5.9.5](https://github.com/lingui/js-lingui/compare/v5.9.4...v5.9.5) (2026-04-06)
+
+### Bug Fixes
+
+* support braces in catalog pathname ([#2495](https://github.com/lingui/js-lingui/issues/2495)) ([db14681](https://github.com/lingui/js-lingui/commit/db14681e36ae1603499fafbd2dd00942ed1c2e0b))
+
+## [5.9.4](https://github.com/lingui/js-lingui/compare/v5.9.3...v5.9.4) (2026-03-27)
+
+### Bug Fixes
+
+* really keep catalog extra from previous catalog ([#2479](https://github.com/lingui/js-lingui/issues/2479)) ([c939113](https://github.com/lingui/js-lingui/commit/c939113293b29a948b80f2a6332cf8016c47ab37))
+
+## [5.9.3](https://github.com/lingui/js-lingui/compare/v5.9.2...v5.9.3) (2026-03-13)
+
+**Note:** Version bump only for package @lingui/cli
+
+## [5.9.2](https://github.com/lingui/js-lingui/compare/v5.9.1...v5.9.2) (2026-02-23)
+
+### Bug Fixes
+
+* extract performance caused by catalog sort ([#2460](https://github.com/lingui/js-lingui/issues/2460)) ([f26a9d9](https://github.com/lingui/js-lingui/commit/f26a9d99a62db378b2a5895aaac3cab39558b568))
+
+## [5.9.1](https://github.com/lingui/js-lingui/compare/v5.9.0...v5.9.1) (2026-02-11)
+
+**Note:** Version bump only for package @lingui/cli
+
 # [5.9.0](https://github.com/lingui/js-lingui/compare/v5.8.0...v5.9.0) (2026-01-23)
 
 ### Bug Fixes

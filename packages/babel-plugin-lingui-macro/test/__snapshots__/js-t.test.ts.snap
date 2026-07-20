@@ -8,7 +8,7 @@ t\` Property \${props.name}, function \${random()}, array \${array[index]}, cons
 
 import { i18n as _i18n } from "@lingui/core";
 _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "vVZNZ5",
     message:
@@ -35,7 +35,7 @@ t({ message: "Hello", context: \`my custom\` });
 
 import { i18n as _i18n } from "@lingui/core";
 _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "BYqAaU",
     message: "Hello",
@@ -43,7 +43,7 @@ _i18n._(
   },
 );
 _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "BYqAaU",
     message: "Hello",
@@ -62,7 +62,7 @@ const msg = message.error(t({ message: "dasd" }));
 import { i18n as _i18n } from "@lingui/core";
 const msg = message.error(
   _i18n._(
-    /*i18n*/
+    /** i18n */
     {
       id: "9ZMZjU",
       message: "dasd",
@@ -80,7 +80,7 @@ const a = t\`Expression assignment\`;
 
 import { i18n as _i18n } from "@lingui/core";
 const a = _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "mjnlP0",
     message: "Expression assignment",
@@ -98,7 +98,7 @@ const a = t(customI18n)\`Expression assignment\`;
 
 import { customI18n } from "./lingui";
 const a = customI18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "mjnlP0",
     message: "Expression assignment",
@@ -116,7 +116,7 @@ t\`Multiline
 
 import { i18n as _i18n } from "@lingui/core";
 _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "-8iwDA",
     message: "Multiline\\n          string",
@@ -125,7 +125,7 @@ _i18n._(
 
 `;
 
-exports[`Production - all props kept if extract: true 1`] = `
+exports[`Production - all props kept with descriptorFields: all 1`] = `
 import { t } from "@lingui/core/macro";
 const msg = t({
   message: \`Hello \${name}\`,
@@ -138,7 +138,7 @@ const msg = t({
 
 import { i18n as _i18n } from "@lingui/core";
 const msg = _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "msgId",
     message: "Hello {name}",
@@ -152,7 +152,7 @@ const msg = _i18n._(
 
 `;
 
-exports[`Production - message prop is kept if stripMessageField: false 1`] = `
+exports[`Production - message and context kept with descriptorFields: message 1`] = `
 import { t } from "@lingui/core/macro";
 const msg = t({
   message: \`Hello \${name}\`,
@@ -165,10 +165,11 @@ const msg = t({
 
 import { i18n as _i18n } from "@lingui/core";
 const msg = _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "msgId",
     message: "Hello {name}",
+    context: "My Context",
     values: {
       name: name,
     },
@@ -185,7 +186,7 @@ const msg = t\`Message\`;
 
 import { i18n as _i18n } from "@lingui/core";
 const msg = _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "xDAtGP",
   },
@@ -206,7 +207,7 @@ const msg = t({
 
 import { i18n as _i18n } from "@lingui/core";
 const msg = _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "msgId",
     values: {
@@ -231,7 +232,7 @@ const msg = t(i18n)({
 
 import { i18n } from "./lingui";
 const msg = i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "msgId",
     values: {
@@ -255,7 +256,7 @@ const msg = t({
 
 import { i18n as _i18n } from "@lingui/core";
 const msg = _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "msgId",
     values: {
@@ -275,14 +276,14 @@ t({ message: "Hello", context: "my custom" });
 
 import { i18n as _i18n } from "@lingui/core";
 _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "uzTaYi",
     message: "Hello",
   },
 );
 _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "BYqAaU",
     message: "Hello",
@@ -315,7 +316,7 @@ const msg = t({
 
 import { i18n as _i18n } from "@lingui/core";
 const msg = _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "msgId",
     message: "{val, plural, one {...} other {...}}",
@@ -336,7 +337,7 @@ const msg = t({ id: \`msgId\` });
 
 import { i18n as _i18n } from "@lingui/core";
 const msg = _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: \`msgId\`,
   },
@@ -352,7 +353,7 @@ const msg = t({ id: "msgId", message: \`Some \${value}\` });
 
 import { i18n as _i18n } from "@lingui/core";
 const msg = _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "msgId",
     message: "Some {value}",
@@ -372,13 +373,13 @@ t\`Field \${t\`First Name\`} is required\`;
 
 import { i18n as _i18n } from "@lingui/core";
 _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "O8dJMg",
     message: "Field {0} is required",
     values: {
       0: _i18n._(
-        /*i18n*/
+        /** i18n */
         {
           id: "kODvZJ",
           message: "First Name",
@@ -398,7 +399,7 @@ const msg = t({ message: \`Hello \${name}\` });
 
 import { i18n as _i18n } from "@lingui/core";
 const msg = _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "OVaF9k",
     message: "Hello {name}",
@@ -419,7 +420,7 @@ const msg = t(i18n)({ message: \`Hello \${name}\` });
 
 import { i18n } from "./lingui";
 const msg = i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "OVaF9k",
     message: "Hello {name}",
@@ -438,7 +439,7 @@ const msg = t(global.i18n)({ message: \`Hello \${name}\` });
 ↓ ↓ ↓ ↓ ↓ ↓
 
 const msg = global.i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "OVaF9k",
     message: "Hello {name}",
@@ -458,7 +459,7 @@ t\`Variable \${name}\`;
 
 import { i18n as _i18n } from "@lingui/core";
 _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "xRRkAE",
     message: "Variable {name}",
@@ -478,7 +479,7 @@ t\`\${duplicate} variable \${duplicate}\`;
 
 import { i18n as _i18n } from "@lingui/core";
 _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "-nhkwg",
     message: "{duplicate} variable {duplicate}",
@@ -498,7 +499,7 @@ t\`Variable \${{ name } as any}\`;
 
 import { i18n as _i18n } from "@lingui/core";
 _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "xRRkAE",
     message: "Variable {name}",
@@ -518,7 +519,7 @@ t\`Variable "name"\`;
 
 import { i18n as _i18n } from "@lingui/core";
 _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "CcPIZW",
     message: 'Variable "name"',
@@ -535,7 +536,7 @@ t\`Variable \\\`\${name}\\\`\`;
 
 import { i18n as _i18n } from "@lingui/core";
 _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "ICBco-",
     message: "Variable \`{name}\`",
@@ -555,7 +556,7 @@ t\`Variable \${{ name: random() }}\`;
 
 import { i18n as _i18n } from "@lingui/core";
 _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "xRRkAE",
     message: "Variable {name}",
@@ -575,7 +576,7 @@ t\`Variable \${{ name }}\`;
 
 import { i18n as _i18n } from "@lingui/core";
 _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "xRRkAE",
     message: "Variable {name}",
@@ -595,13 +596,29 @@ t\`Variable \${ph({ name: random() })}\`;
 
 import { i18n as _i18n } from "@lingui/core";
 _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "xRRkAE",
     message: "Variable {name}",
     values: {
       name: random(),
     },
+  },
+);
+
+`;
+
+exports[`descriptorFields: id-only - message prop is removed 1`] = `
+import { t } from "@lingui/core/macro";
+const msg = t\`Message\`;
+
+↓ ↓ ↓ ↓ ↓ ↓
+
+import { i18n as _i18n } from "@lingui/core";
+const msg = _i18n._(
+  /** i18n */
+  {
+    id: "xDAtGP",
   },
 );
 
@@ -616,7 +633,7 @@ t\`Ola! \${plural(count, { one: "1 user", many: "# users" })} is required\`;
 
 import { i18n as _i18n } from "@lingui/core";
 _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "EUO-Gb",
     message: "Ola! {count, plural, one {1 user} many {# users}} is required",
@@ -638,7 +655,7 @@ t2\`Ola! \${plural1(count, { one: "1 user", many: "# users" })} Ola!\`;
 
 import { i18n as _i18n } from "@lingui/core";
 _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "aui5Gr",
     message: "Ola!  {count, plural, one {1 user} many {# users}} Ola!",
@@ -648,7 +665,7 @@ _i18n._(
   },
 );
 _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "wJ7AD9",
     message: "Ola! {count, plural, one {1 user} many {# users}} Ola!",
@@ -668,7 +685,7 @@ const msg = t\`Message\`;
 
 import { i18n as _i18n } from "@lingui/core";
 const msg = _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "xDAtGP",
     message: "Message",
@@ -696,26 +713,10 @@ const msg = t\`Message\`;
 
 import { myI18n as _i18n } from "@my/lingui";
 const msg = _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "xDAtGP",
     message: "Message",
-  },
-);
-
-`;
-
-exports[`stripMessageField option - message prop is removed if stripMessageField: true 1`] = `
-import { t } from "@lingui/core/macro";
-const msg = t\`Message\`;
-
-↓ ↓ ↓ ↓ ↓ ↓
-
-import { i18n as _i18n } from "@lingui/core";
-const msg = _i18n._(
-  /*i18n*/
-  {
-    id: "xDAtGP",
   },
 );
 
@@ -729,7 +730,7 @@ const a = t2\`Expression assignment\`;
 
 import { i18n as _i18n } from "@lingui/core";
 const a = _i18n._(
-  /*i18n*/
+  /** i18n */
   {
     id: "mjnlP0",
     message: "Expression assignment",

@@ -11,27 +11,32 @@ import {
 } from "@babel/types"
 import { JsMacroName, MsgDescriptorPropKey } from "./constants"
 import { ArgToken, TextToken, Token } from "./icu"
-import { createMessageDescriptorFromTokens } from "./messageDescriptorUtils"
+import {
+  createMessageDescriptorFromTokens,
+  ResolvedDescriptorFields,
+} from "./messageDescriptorUtils"
 import { makeCounter } from "./utils"
+import type { DirectiveValues } from "./linguiDirective"
 
 export type MacroJsContext = {
   // Positional expressions counter (e.g. for placeholders `Hello {0}, today is {1}`)
   getExpressionIndex: () => number
-  stripNonEssentialProps: boolean
-  stripMessageProp: boolean
+  descriptorFields: ResolvedDescriptorFields
   isLinguiIdentifier: (node: Identifier, macro: JsMacroName) => boolean
+  getDirective: (line: number) => DirectiveValues | undefined
+  idPrefixLeader?: string
 }
 
 export function createMacroJsContext(
   isLinguiIdentifier: MacroJsContext["isLinguiIdentifier"],
-  stripNonEssentialProps: boolean,
-  stripMessageProp: boolean,
+  descriptorFields: ResolvedDescriptorFields,
+  getDirective: MacroJsContext["getDirective"] = () => undefined,
 ): MacroJsContext {
   return {
-    getExpressionIndex: makeCounter(),
     isLinguiIdentifier,
-    stripNonEssentialProps,
-    stripMessageProp,
+    getExpressionIndex: makeCounter(),
+    descriptorFields,
+    getDirective,
   }
 }
 
@@ -84,15 +89,18 @@ export function processDescriptor(
       : tokenizeNode(messageValue, true, ctx)
   }
 
+  const directive = ctx.getDirective(descriptor.loc?.start.line) || {}
+
   return createMessageDescriptorFromTokens(
     tokens,
     descriptor.loc,
-    ctx.stripNonEssentialProps,
-    ctx.stripMessageProp,
+    ctx.descriptorFields,
     {
+      ...directive,
       id: idProperty,
-      context: contextProperty,
-      comment: commentProperty,
+      idPrefixLeader: ctx.idPrefixLeader,
+      context: contextProperty ?? directive?.context,
+      comment: commentProperty ?? directive?.comment,
     },
   )
 }

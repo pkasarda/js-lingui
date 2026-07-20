@@ -1,33 +1,36 @@
-import type { PluginObj, Visitor, PluginPass } from "@babel/core"
+import type { PluginObj, PluginPass, Visitor } from "@babel/core"
 import type * as babelTypes from "@babel/types"
-import { Program, Identifier } from "@babel/types"
+import { Expression, Identifier, Program } from "@babel/types"
 import { MacroJSX } from "./macroJsx"
-import type { NodePath } from "@babel/traverse"
+import type { NodePath, Scope } from "@babel/traverse"
 import { MacroJs } from "./macroJs"
 import { JsMacroName } from "./constants"
 import {
-  type LinguiConfigNormalized,
   getConfig as loadConfig,
   LinguiConfig,
+  type LinguiConfigNormalized,
 } from "@lingui/conf"
-
-let config: LinguiConfigNormalized
+import { ResolvedDescriptorFields } from "./messageDescriptorUtils"
+import {
+  collectLinguiDirectives,
+  findDirectiveForLine,
+} from "./linguiDirective"
 
 export type LinguiPluginOpts = {
-  /*
-   * When set `true` all auxiliary data such as `comment`, `context`,
-   * and default message would be kept regardless of the current environment
-   *
-   * This flag explicitly set by Lingui CLI when running extraction process
-   */
-  extract?: boolean
   /**
-   * Setting `stripMessageField` to `true` will strip messages and comments from both development and production bundles.
-   * Alternatively, set it to `false` to keep the original messages in both environments.
+   * Controls which descriptor fields are preserved in the transformed code.
    *
-   * If not set value would be determined based on `process.env.NODE_ENV === "production"`
+   * - `"auto"` (default): In production (`NODE_ENV === "production"`), keeps only the `id`.
+   *    Otherwise, behaves like `"all"`.
+   * - `"all"`: Keeps every field: `id`, `message`, `context`, and `comment`.
+   *    Used by Lingui CLI during extraction.
+   * - `"id-only"`: Strips everything except the `id`. Most optimized for production.
+   * - `"message"`: Keeps `id`, `message`, and `context` (but not `comment`).
+   *    Use when you need runtime access to message and context.
+   *
+   * @default "auto"
    */
-  stripMessageField?: boolean
+  descriptorFields?: "auto" | "all" | "id-only" | "message"
 
   /**
    * Resolved and normalized Lingui Configuration
@@ -36,13 +39,7 @@ export type LinguiPluginOpts = {
 }
 
 function getConfig(_config?: LinguiConfigNormalized) {
-  if (_config) {
-    config = _config
-  }
-  if (!config) {
-    config = loadConfig()
-  }
-  return config
+  return _config ?? loadConfig()
 }
 
 function reportUnsupportedSyntax(path: NodePath, e: Error) {
@@ -58,13 +55,45 @@ function reportUnsupportedSyntax(path: NodePath, e: Error) {
   throw codeFrameError
 }
 
-function shouldStripMessageProp(opts: LinguiPluginOpts) {
-  if (typeof opts.stripMessageField === "boolean") {
-    // if explicitly set in options, use it
-    return opts.stripMessageField
+const VALID_DESCRIPTOR_FIELDS = [
+  "auto",
+  "all",
+  "id-only",
+  "message",
+] as LinguiPluginOpts["descriptorFields"][]
+
+const REMOVED_OPTIONS: Record<string, string> = {
+  extract:
+    'Use `descriptorFields: "all"` instead of `extract: true` to preserve all fields during extraction.',
+  stripMessageField:
+    'Use `descriptorFields: "id-only"` instead of `stripMessageField: true`, ' +
+    'or `descriptorFields: "message"` to keep message and context.',
+}
+
+function resolveDescriptorFields(
+  opts: LinguiPluginOpts,
+): ResolvedDescriptorFields {
+  // introduced in v6, remove these hints in V7
+  for (const [key, hint] of Object.entries(REMOVED_OPTIONS)) {
+    if (key in (opts as Record<string, unknown>)) {
+      throw new Error(`[lingui] Option "${key}" has been removed. ${hint}`)
+    }
   }
-  // default to strip message in production if no explicit option is set and not during extract
-  return process.env.NODE_ENV === "production" && !opts.extract
+
+  const mode = opts.descriptorFields ?? "auto"
+
+  if (!VALID_DESCRIPTOR_FIELDS.includes(mode)) {
+    throw new Error(
+      `[lingui] Invalid descriptorFields value: "${mode}". ` +
+        `Expected one of: ${VALID_DESCRIPTOR_FIELDS.join(", ")}.`,
+    )
+  }
+
+  if (mode !== "auto") {
+    return mode as ResolvedDescriptorFields
+  }
+  // "auto": production → "id-only", otherwise → "all"
+  return process.env.NODE_ENV === "production" ? "id-only" : "all"
 }
 
 type LinguiSymbol = "Trans" | "useLingui" | "i18n"
@@ -139,7 +168,10 @@ export default function ({
     )
   }
 
-  function getMacroImports(path: NodePath<Program>): MacroImports {
+  function getMacroImports(
+    path: NodePath<Program>,
+    config: LinguiConfigNormalized,
+  ): MacroImports {
     const corePackage = new Set(
       path
         .get("body")
@@ -182,6 +214,7 @@ export default function ({
     path: NodePath,
     node: Identifier,
     macro: JsMacroName,
+    config: LinguiConfigNormalized,
   ) {
     let identPath = getIdentifierPath(path, node)
 
@@ -212,12 +245,13 @@ export default function ({
     visitor: {
       Program: {
         enter(path, state) {
-          state.set(
-            "linguiConfig",
-            getConfig((state.opts as LinguiPluginOpts).linguiConfig),
+          const linguiConfig = getConfig(
+            (state.opts as LinguiPluginOpts).linguiConfig,
           )
 
-          const macroImports = getMacroImports(path)
+          state.set("linguiConfig", linguiConfig)
+
+          const macroImports = getMacroImports(path, linguiConfig)
 
           if (!macroImports.all.size) {
             return
@@ -229,6 +263,12 @@ export default function ({
             useLingui: path.scope.generateUidIdentifier("useLingui"),
           } satisfies Record<LinguiSymbol, babelTypes.Identifier>)
 
+          const directives = collectLinguiDirectives(
+            (state.file.ast as babelTypes.File).comments,
+          )
+          const getDirective = (line: number) =>
+            findDirectiveForLine(directives, line)
+
           path.traverse(
             {
               JSXElement(path, state) {
@@ -236,14 +276,22 @@ export default function ({
                   { types: t },
                   {
                     transImportName: getSymbolIdentifier(state, "Trans").name,
-                    stripNonEssentialProps:
-                      process.env.NODE_ENV == "production" &&
-                      !(state.opts as LinguiPluginOpts).extract,
-                    stripMessageProp: shouldStripMessageProp(
+                    descriptorFields: resolveDescriptorFields(
                       state.opts as LinguiPluginOpts,
                     ),
+                    transformElement:
+                      linguiConfig.macro.jsxRuntime === "solid"
+                        ? (value) =>
+                            wrapJsxElementAsComponent(t, value, path.scope)
+                        : undefined,
                     isLinguiIdentifier: (node: Identifier, macro) =>
-                      isLinguiIdentifier(path, node, macro),
+                      isLinguiIdentifier(path, node, macro, linguiConfig),
+                    getDirective,
+                    jsxPlaceholderAttribute:
+                      linguiConfig.macro?.jsxPlaceholderAttribute,
+                    jsxPlaceholderDefaults:
+                      linguiConfig.macro?.jsxPlaceholderDefaults,
+                    idPrefixLeader: linguiConfig.macro?.idPrefixLeader,
                   },
                 )
 
@@ -269,18 +317,16 @@ export default function ({
                 state: PluginPass,
               ) {
                 const macro = new MacroJs({
-                  stripNonEssentialProps:
-                    process.env.NODE_ENV == "production" &&
-                    !(state.opts as LinguiPluginOpts).extract,
-                  stripMessageProp: shouldStripMessageProp(
+                  descriptorFields: resolveDescriptorFields(
                     state.opts as LinguiPluginOpts,
                   ),
                   i18nImportName: getSymbolIdentifier(state, "i18n").name,
                   useLinguiImportName: getSymbolIdentifier(state, "useLingui")
                     .name,
-
                   isLinguiIdentifier: (node: Identifier, macro) =>
-                    isLinguiIdentifier(path, node, macro),
+                    isLinguiIdentifier(path, node, macro, linguiConfig),
+                  getDirective,
+                  idPrefixLeader: linguiConfig.macro?.idPrefixLeader,
                 })
                 let newNode: false | babelTypes.Node
 
@@ -314,10 +360,44 @@ export default function ({
           )
         },
         exit(path, state) {
-          const macroImports = getMacroImports(path)
+          const linguiConfig = state.get(
+            "linguiConfig",
+          ) as LinguiConfigNormalized
+          const macroImports = getMacroImports(path, linguiConfig)
           macroImports.all.forEach((path) => path.remove())
         },
       },
     } as Visitor<PluginPass>,
   }
+}
+
+function wrapJsxElementAsComponent(
+  t: typeof babelTypes,
+  value: Expression,
+  scope: Scope,
+): Expression {
+  if (!t.isJSXElement(value)) {
+    return value
+  }
+
+  const props = scope.generateUidIdentifier("props")
+
+  return t.arrowFunctionExpression(
+    [props],
+    t.jsxElement(
+      t.jsxOpeningElement(
+        t.cloneNode(value.openingElement.name),
+        [
+          ...value.openingElement.attributes.map((attribute) =>
+            t.cloneNode(attribute),
+          ),
+          t.jsxSpreadAttribute(props),
+        ],
+        true,
+      ),
+      null,
+      [],
+      true,
+    ),
+  )
 }

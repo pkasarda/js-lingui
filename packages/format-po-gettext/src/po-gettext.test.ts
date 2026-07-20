@@ -164,7 +164,7 @@ describe("po-gettext format", () => {
     const po = `
 msgid ""
 msgstr ""
-"Language: cs\n"
+"Language: cs\\n"
 
 #. js-lingui:icu=%7B#%2C+plural%2C+one+%7Bday%7D+other+%7Bdays%7D%7D&pluralize_on=#
 msgid "# day"
@@ -309,7 +309,7 @@ msgstr[2] "{count} jours"
     const po = `
 msgid ""
 msgstr ""
-"Language: cs\n"
+"Language: cs\\n"
 "Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 3;\n"
 
 #. js-lingui:icu=%7Bcount%2C+plural%2C+one+%7B%7Bcount%7D+day%7D+few+%7B%7Bcount%7D+days%7D+many+%7B%7Bcount%7D+days%7D+other+%7B%7Bcount%7D+days%7D%7D&pluralize_on=#
@@ -340,6 +340,64 @@ msgstr[3] "# dní"
         },
       }
     `)
+  })
+
+  describe("foldLength", () => {
+    it("should not fold by default", () => {
+      const format = createFormat()
+
+      const catalog: CatalogType = {
+        veryLongString: {
+          translation:
+            "One morning, when Gregor Samsa woke from troubled dreams, he found himself transformed in his bed into a horrible vermin.",
+        },
+      }
+
+      const actual = format.serialize(catalog, defaultSerializeCtx)
+      expect(actual).toMatchSnapshot()
+    })
+
+    it("should fold at custom length", () => {
+      const format = createFormat({ foldLength: 40 })
+
+      const catalog: CatalogType = {
+        veryLongString: {
+          translation:
+            "One morning, when Gregor Samsa woke from troubled dreams, he found himself transformed in his bed into a horrible vermin.",
+        },
+      }
+
+      const actual = format.serialize(catalog, defaultSerializeCtx)
+      expect(actual).toMatchSnapshot()
+    })
+  })
+
+  describe("compactMultiline", () => {
+    it("should use non-compact format when compactMultiline is false", () => {
+      const format = createFormat({ compactMultiline: false })
+
+      const catalog: CatalogType = {
+        multiline: {
+          translation: "First line\nSecond line\nThird line",
+        },
+      }
+
+      const actual = format.serialize(catalog, defaultSerializeCtx)
+      expect(actual).toMatchSnapshot()
+    })
+
+    it("should use compact format when compactMultiline is true", () => {
+      const format = createFormat({ compactMultiline: true })
+
+      const catalog: CatalogType = {
+        multiline: {
+          translation: "First line\nSecond line\nThird line",
+        },
+      }
+
+      const actual = format.serialize(catalog, defaultSerializeCtx)
+      expect(actual).toMatchSnapshot()
+    })
   })
 
   describe("using custom prefix", () => {
@@ -536,6 +594,63 @@ msgstr[3] "# dní"
       ) as string
 
       expect(pofile).toMatchSnapshot()
+    })
+
+    it("should deduplicate file references when merging duplicate entries without line numbers", () => {
+      const duplicateFormatter = createFormat({
+        mergePlurals: true,
+        origins: true,
+        lineNumbers: false,
+      })
+      const message1 = "{count, plural, one {one book} other {many books}}"
+      const message2 =
+        "{anotherCount, plural, one {one book} other {many books}}"
+
+      const id1 = generateMessageId(message1)
+      const id2 = generateMessageId(message2)
+
+      const catalog: CatalogType = {
+        [id1]: {
+          message: message1,
+          translation: message1,
+          origin: [["src/App.tsx", 60]],
+        },
+        [id2]: {
+          message: message2,
+          translation: message2,
+          origin: [["src/App.tsx", 66]],
+        },
+      }
+
+      const pofile = duplicateFormatter.serialize(
+        catalog,
+        defaultSerializeCtx,
+      ) as string
+
+      expect(pofile).toMatchInlineSnapshot(`
+        "msgid ""
+        msgstr ""
+        "POT-Creation-Date: 2018-08-27 10:00+0000\\n"
+        "MIME-Version: 1.0\\n"
+        "Content-Type: text/plain; charset=utf-8\\n"
+        "Content-Transfer-Encoding: 8bit\\n"
+        "X-Generator: @lingui/cli\\n"
+        "Language: en\\n"
+        "Project-Id-Version: \\n"
+        "Report-Msgid-Bugs-To: \\n"
+        "PO-Revision-Date: \\n"
+        "Last-Translator: \\n"
+        "Language-Team: \\n"
+        "Plural-Forms: \\n"
+
+        #. js-lingui:icu=%7B%24var%2C+plural%2C+one+%7Bone+book%7D+other+%7Bmany+books%7D%7D&pluralize_on=count%2CanotherCount
+        #: src/App.tsx
+        msgid "one book"
+        msgid_plural "many books"
+        msgstr[0] "one book"
+        msgstr[1] "many books"
+        "
+      `)
     })
 
     it("should keep all non-plurals entries intact", () => {
